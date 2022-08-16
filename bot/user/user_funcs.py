@@ -18,7 +18,7 @@ class File():
 class TgFile():
     file_name: str
     file_id: str
-    file_size: int 
+    file_size: int
     file_path: str
 
 
@@ -40,10 +40,10 @@ def get_file(message) -> None:
         bytes = text.encode('utf-8')
     else:
         tgFile = catch_file_type(message)
-        if tgFile == None: # file_size > 20mb
-            bot.send_message(message.chat.id, "Не могу загрузить файл больше 20мб(")
+        if tgFile == None: # file_size > 20mb or something
+            bot.send_message(message.chat.id, "Не могу загрузить файл")
             return None
-        else: 
+        else:
             file_name = tgFile.file_name
             bytes = bot.download_file(tgFile.file_path)
     file = File(file_name, bytes)
@@ -59,7 +59,7 @@ def catch_file_type(message):
         if message.content_type == "photo":
             file_info = bot.get_file(message.photo[len(message.photo) - 1].file_id)
         elif message.content_type == "video":
-            file_info = bot.get_file(message.voice.file_id)
+            file_info = bot.get_file(message.video.file_id)
         elif message.content_type == "video_note":
             file_info = bot.get_file(message.video_note.file_id)
         elif message.content_type == "voice":
@@ -72,7 +72,7 @@ def catch_file_type(message):
         else: # document type
             file_info = bot.get_file(message.document.file_id)
             file_name = message.document.file_name
-            
+
         if not file_name:
             file_name = file_info.file_path.split("/")[1]
         return TgFile(file_name, file_info.file_id, file_info.file_size, file_info.file_path)
@@ -128,7 +128,7 @@ def _send_dec_file(message, file: File) -> None:
         os.remove(packed_file.name)
         time.sleep(60)
         bot.delete_message(message.chat.id, msg.message_id)
-    
+
 
 def _encrypted_file(file: File):
     enc_file = fernet.encrypted(file.bytes, file.password)
@@ -138,4 +138,4 @@ def _encrypted_file(file: File):
 def _decrypted_file(file: File):
     dec_file = fernet.decrypted(file.bytes, file.password)
     return dec_file
-    
+
